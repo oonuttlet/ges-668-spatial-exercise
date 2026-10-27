@@ -1,0 +1,72 @@
+# R session and workspace files
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
+# RStudio project files (uncomment if you don't want to version the project file)
+# *.Rproj
+
+# renv: keep the lockfile and activation infrastructure in Git,
+# but ignore the local package library and cache
+renv/library/
+renv/staging/
+renv/cellar/
+renv/python/
+.Rprofile
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials/
+
+# Logs and temporary files
+*.log
+logs/
+tmp/
+temp/
+*.tmp
+*.bak
+*.swp
+*~
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Python tooling, if used for deployment or testing
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Node tooling, if frontend tooling is added later
+node_modules/
+dist/
+build/
+
+# Generated spatial datasets and outputs
+# Keep source data and deliberately versioned fixtures in Git.
+data/generated/
+output/
+outputs/
+*.gpkg
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+*.qix
+
+# Local API development
+plumber.log
+.Rcheck/
+
+# Deployment artifacts
+deploy-staging/
+.DEPLOYED_VERSION
