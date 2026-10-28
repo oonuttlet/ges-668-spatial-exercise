@@ -4,19 +4,239 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]>      <html class="no-js"> <!--<![endif]-->
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title></title>
-        <meta name="description" content="">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="stylesheet" href="">
-    </head>
-    <body>
-        <!--[if lt IE 7]>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!--[if lt IE 7]>
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="#">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
-        
-        <script src="" async defer></script>
-    </body>
+    <div id="usernameDiv">
+        <input id="usernameInput" />
+        <button id="confirmUsername">Submit Username</button>
+    </div>
+    <br>
+    <div id="questionsDiv">
+        <div class="question hidden" data-question="1">
+            <h3>Question 1</h3>
+
+            <div class="question-text"></div>
+
+            <button data-action="points">Download Points</button>
+            <button data-action="polygons">Download Polygons</button>
+            <br><br>
+            <input data-action="answer" placeholder="Your answer" />
+            <button data-action="check">Check Answer</button>
+            <p data-action="result" aria-live="polite"></p>
+        </div>
+
+        <div class="question hidden" data-question="2">
+            <h3>Question 2</h3>
+
+            <div class="question-text"></div>
+
+            <button data-action="points">Download Points</button>
+            <button data-action="polygons">Download Polygons</button>
+            <br><br>
+            <input data-action="answer" placeholder="Your answer" />
+            <button data-action="check">Check Answer</button>
+            <p data-action="result" aria-live="polite"></p>
+        </div>
+
+        <div class="question hidden" data-question="3">
+            <h3>Question 3</h3>
+
+            <div class="question-text"></div>
+
+            <button data-action="points">Download Points</button>
+            <button data-action="polygons">Download Polygons</button>
+            <br><br>
+            <input data-action="answer" placeholder="Your answer" />
+            <button data-action="check">Check Answer</button>
+            <p data-action="result" aria-live="polite"></p>
+        </div>
+    </div>
+
+    <script src="" async defer></script>
+</body>
+
+<script type="module">
+    const usernameInput = document.getElementById("usernameInput");
+    const confirmUsernameBtn = document.getElementById("confirmUsername");
+    const questionsDiv = document.getElementById("questionsDiv");
+
+    let username = "";
+
+    function submitUsername() {
+        username = usernameInput.value.trim();
+
+        if (!username) {
+            alert("Please enter a username.");
+            return;
+        }
+
+        usernameInput.disabled = true;
+        confirmUsernameBtn.disabled = true;
+        questionsDiv.classList.remove("hidden");
+
+        console.log("Username submitted:", username);
+        revealNextQuestion(0);
+    }
+
+    function downloadPoints(username, question) {
+        const url = `http://127.0.0.1:8000/dataset/points?username=${encodeURIComponent(username)}&question=${question}`;
+        window.location.href = url;
+    }
+
+    function downloadPolygons(username, question) {
+        const url = `http://127.0.0.1:8000/dataset/voronoi?username=${encodeURIComponent(username)}&question=${question}`;
+        window.location.href = url;
+    }
+
+    async function loadQuestionText(questionDiv) {
+        const question = Number(questionDiv.dataset.question);
+        const textDiv = questionDiv.querySelector(".question-text");
+
+        try {
+            const url =
+                `http://127.0.0.1:8000/questions/${question}` +
+                `?username=${encodeURIComponent(username)}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Could not load question.");
+            }
+
+            // Display the question text
+            textDiv.innerHTML = data.text;
+
+            // Build the weights table
+            const table = document.createElement("table");
+            const header = table.insertRow();
+            header.insertCell().textContent = "Category";
+            header.insertCell().textContent = "Weight";
+
+            for (const [category, weight] of Object.entries(data.weights)) {
+                const row = table.insertRow();
+                row.insertCell().textContent = category;
+                row.insertCell().textContent = weight;
+            }
+
+            // Add the table below the question text
+            textDiv.appendChild(table);
+
+        } catch (error) {
+            textDiv.textContent = error.message;
+            console.error("Error loading question:", error);
+        }
+    }
+
+    function revealNextQuestion(question) {
+        const nextQuestion = document.querySelector(
+            `.question[data-question="${question + 1}"]`
+        );
+
+        if (nextQuestion) {
+            nextQuestion.classList.remove("hidden");
+            loadQuestionText(nextQuestion);
+        }
+    }
+
+    async function checkAnswer(username, question, answer, resultElement) {
+        resultElement.textContent = "Checking...";
+
+        try {
+            const response = await fetch(
+                `http://127.0.0.1:8000/check/${question}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        answer: answer
+                    })
+                }
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || "Failed to check answer.");
+            }
+
+            const correct = Array.isArray(result.correct)
+                ? result.correct[0]
+                : result.correct;
+
+            if (correct === true) {
+                resultElement.textContent = "Correct! Well done.";
+                resultElement.style.color = "green";
+                revealNextQuestion(question);
+            } else {
+                resultElement.textContent = "Incorrect. Try again.";
+                resultElement.style.color = "red";
+            }
+        } catch (error) {
+            resultElement.textContent = `Error: ${error.message}`;
+            resultElement.style.color = "red";
+            console.error(error);
+        }
+    }
+
+    confirmUsernameBtn.addEventListener("click", submitUsername);
+    // One handler for all question buttons
+    questionsDiv.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+
+        if (!button) return;
+
+        const questionDiv = button.closest(".question");
+        const question = Number(questionDiv.dataset.question);
+
+        switch (button.dataset.action) {
+            case "points":
+                downloadPoints(username, question);
+                break;
+
+            case "polygons":
+                downloadPolygons(username, question);
+                break;
+
+            case "check": {
+                const answerInput =
+                    questionDiv.querySelector('[data-action="answer"]');
+
+                const resultElement =
+                    questionDiv.querySelector('[data-action="result"]');
+
+                const answer = answerInput.value.trim();
+
+                if (!answer) {
+                    resultElement.textContent = "Please enter an answer.";
+                    return;
+                }
+
+                await checkAnswer(
+                    username,
+                    question,
+                    answer,
+                    resultElement
+                );
+                break;
+            }
+        }
+    });
+</script>
+
 </html>

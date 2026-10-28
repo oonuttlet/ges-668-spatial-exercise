@@ -1,0 +1,19 @@
+.hidden {
+    display: none
+}
+
+.question-text table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.question-text th,
+.question-text td {
+    border: 1px solid black;
+    padding: 6px 12px;
+    text-align: left;
+}
+
+.question-text th {
+    background-color: #f2f2f2;
+}

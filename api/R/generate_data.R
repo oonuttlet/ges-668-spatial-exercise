@@ -1,5 +1,4 @@
 library(sf)
-library(tidyverse)
 library(dplyr)
 
 generate_voronoi <- function(
@@ -12,7 +11,8 @@ generate_voronoi <- function(
     st_collection_extract("POLYGON") |>
     st_as_sf() |>
     st_intersection(x) |>
-    st_as_sf()
+    st_as_sf() |>
+    mutate(id = row_number())
 
   dat
 }
@@ -31,9 +31,9 @@ generate_points <- function(
   dat
 }
 
-generate_data <- function(seed, nquestion, x, npoly, npts) {
+generate_data <- function(username, nquestion, x, npoly, npts) {
   seed_value <- digest::digest2int(
-    paste0(seed, "_", nquestion)
+    paste0(username, "_", nquestion)
   )
 
   withr::with_seed(seed_value, {
