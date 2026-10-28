@@ -68,6 +68,7 @@
 </body>
 
 <script type="module">
+    const API_BASE = "/ges668/assignments/repro/api";
     const usernameInput = document.getElementById("usernameInput");
     const confirmUsernameBtn = document.getElementById("confirmUsername");
     const questionsDiv = document.getElementById("questionsDiv");
@@ -91,12 +92,12 @@
     }
 
     function downloadPoints(username, question) {
-        const url = `http://127.0.0.1:8000/dataset/points?username=${encodeURIComponent(username)}&question=${question}`;
+	const url = `${API_BASE}/dataset/points?username=${encodeURIComponent(username)}&question=${question}`;
         window.location.href = url;
     }
 
     function downloadPolygons(username, question) {
-        const url = `http://127.0.0.1:8000/dataset/voronoi?username=${encodeURIComponent(username)}&question=${question}`;
+        const url = `${API_BASE}/dataset/voronoi?username=${encodeURIComponent(username)}&question=${question}`;
         window.location.href = url;
     }
 
@@ -106,7 +107,7 @@
 
         try {
             const url =
-                `http://127.0.0.1:8000/questions/${question}` +
+                `${API_BASE}/questions/${question}` +
                 `?username=${encodeURIComponent(username)}`;
 
             const response = await fetch(url);
@@ -156,7 +157,7 @@
 
         try {
             const response = await fetch(
-                `http://127.0.0.1:8000/check/${question}`,
+                `${API_BASE}/check/${question}`,
                 {
                     method: "POST",
                     headers: {
